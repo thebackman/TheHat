@@ -9,7 +9,7 @@
 
 
 import time
-from datetime import datetime
+# from datetime import datetime
 import unicornhat as unicorn
 
 
@@ -34,10 +34,6 @@ col_tuple = (139,0,0)
 def go_right(wait_in_seconds):
     for col in range(0, WIDTH):
         for row in range(0, HEIGHT):
-            # get a feeling for how long one iteration takes
-            # about 1 milliseconds, or not even that
-            # now = datetime.now()
-            # print(now)
             # light up the entire column
             unicorn.set_pixel(col, row, col_tuple)
         unicorn.show()
@@ -65,8 +61,8 @@ def knight_rider(seconds):
     # Run for xx seconds
     t_end = time.time() + seconds
     while time.time() < t_end:
-        go_right(0.08)
-        go_left(0.08)    
+        go_right(0.05)
+        go_left(0.05)    
     # kill all pixels
     unicorn.off()
 
