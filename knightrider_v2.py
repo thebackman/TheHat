@@ -1,16 +1,16 @@
-""" """
+""" Displays a knight rider animation on the hat """
 
 
 # -- setup
 
 
 import time
-from datetime import datetime
+# from datetime import datetime
 import unicornhat as unicorn
 
 unicorn.set_layout(unicorn.AUTO)
 unicorn.rotation(180)
-unicorn.brightness(0.4)
+unicorn.brightness(0.5)
 WIDTH, HEIGHT = unicorn.get_shape()
 
 
@@ -19,14 +19,14 @@ WIDTH, HEIGHT = unicorn.get_shape()
 
 # define a list of reds to use to light up the pixels
 # this can be tinkered with to produce something that looks better
-color_range = [(255,78,78),
-               (255,39,39),
-               (216,0,0),
-               (118,0,0),
-               (118,0,0),
-               (216,0,0),
-               (255,39,39),
-               (255,78,78)]
+color_range = [(110,0,0),
+               (150,0,0),
+               (220,0,0),
+               (255,0,0),
+               (255,0,0),
+               (220,0,0),
+               (150,0,0),
+               (110,0,0)]
 
 
 # -- functions
@@ -44,6 +44,7 @@ def light_up_row(palette, start_value):
     """
     # set starting position of the palette
     pal_pos = 0
+    print(f"range to light up is from {start_value} to {start_value + 7}")
     # loop from start value to end value (8 positions)
     for col in range(start_value, start_value + 8, 1):
         # if the value is not outside the hat range, light up this pixel
@@ -55,20 +56,20 @@ def light_up_row(palette, start_value):
         # for each loop iteration, update display
         unicorn.show()
         pal_pos = pal_pos + 1
-    time.sleep(0.03)
+    time.sleep(0.02)
     unicorn.off()
     print("-----------------------------------------------")
 
 
 def offset_looper():
     """ constructs ranges and feeds it to light_up_row """
-    for i in range(-8, 8, 1):
+    for i in range(-9, 9, 1):
         print("moving right -->")
         print(f"position is {i}")
         light_up_row(palette = color_range, start_value = i)
     print("---- changing direction ----")
-    for p in range(8, -8, -1):
-        print("moving left -->")
+    for p in range(9, -9, -1):
+        print("moving left <--")
         print(f"position is {p}")
         light_up_row(palette = color_range, start_value = p)
 
