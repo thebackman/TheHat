@@ -1,11 +1,9 @@
-""" Displays a knight rider animation on the hat """
+""" Displays a knight rider animation on the hat"""
 
 
 # -- setup
 
-
 import time
-# from datetime import datetime
 import unicornhat as unicorn
 
 unicorn.set_layout(unicorn.AUTO)
@@ -86,4 +84,3 @@ def knight_rider(seconds):
 
 
 knight_rider(8)
-
