@@ -8,6 +8,7 @@ import sqlite3
 from datetime import datetime, timedelta
 import time
 import unicornhat as unicorn
+import pandas as pd
 
 # led matrix
 unicorn.set_layout(unicorn.AUTO)
@@ -41,25 +42,44 @@ def get_data():
            
     # generate query - yes I know, SQL injection but its not exposed
     query = f"""
-    with inbetween as (
-        select date(time) as datecol, *
+    with prepared as (
+    	select
+    		date(time) as datecol,
+    		time(time) as timecol,
+    		*
         from air_measures_10min
-    	where datecol between '{DAYS_AGO}' and '{YESTERDAY}'),
-    morebetween as (
-    	select ntile(8) OVER(partition by datecol order by key) as the_holy_eight, *
-    	from inbetween),
-    lastbetween as (
-    	select datecol, the_holy_eight, avg(temp) as mean_temp, min(time), max(time)
-    	from morebetween
-    	group by datecol, the_holy_eight)
-    select * from lastbetween ;
+        where datecol between '{DAYS_AGO}' and '{YESTERDAY}'),
+    	slotted as (
+        select
+        case
+        	when timecol between '00:00:00' and '03:00:00' then 'slot0_3'
+            when timecol between '03:00:00' and '06:00:00' then 'slot3_6'
+            when timecol between '06:00:00' and '09:00:00' then 'slot6_9'
+            when timecol between '09:00:00' and '12:00:00' then 'slot9_12'
+            when timecol between '12:00:00' and '15:00:00' then 'slot12_15'
+            when timecol between '15:00:00' and '18:00:00' then 'slot15_18'
+            when timecol between '18:00:00' and '21:00:00' then 'slot18_21'
+            when timecol between '21:00:00' and '24:00:00' then 'slot21_24'
+        end as timeslot,
+        *
+        from prepared)
+    select
+        datecol,
+        timeslot,
+        count(*) as n_obs,
+    	avg(temp) as mean_temp,
+    	min(time) as min_time,
+    	max(time) as max_time
+    from slotted
+    group by datecol, timeslot
+    order by datecol, min_time ;
     """
     
     # get the data
     conn = sqlite3.connect(AIR_DB)
-    cur = conn.cursor()    
-    cur.execute(query)
-    rows = cur.fetchall()
+    
+    # get the data 
+    rows = pd.read_sql_query(query, con = conn)
     conn.close()
     return rows
     
@@ -131,6 +151,12 @@ def activate_pixels(seconds):
 
 # -- start execution
 
+# first get a data frame
+    
+
+results = get_data()
+
+
 if __name__ == "__main__":
     results = get_data()
     show_color_scheme(rocket)
@@ -139,6 +165,8 @@ if __name__ == "__main__":
     # right now, unless we have recordings that gives us eight slots per day,
     # do not show
     # TODO: rewrite query to generate results based on pre def time slots
+    # possibly generate a sequence of dates, timesslots to represent missing
+    # data
     if len(results) != 60:
         print("data has not been properly recorded")
         light_up_error()
