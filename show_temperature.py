@@ -20,10 +20,13 @@ WIDTH, HEIGHT = unicorn.get_shape()
 PROJ_FOLDER = "/home/pi/Projects/Hattie"
 AIR_DB = os.path.join("/home/pi/Projects/GatherSensorData", "air.db")
 
-# calculate dates
-NOW = datetime.now().date()
-YESTERDAY = NOW - timedelta(days = 1)
-DAYS_AGO = NOW - timedelta(days = 8)
+# -- prepare dates
+
+TODAY = datetime.now().date()
+YESTERDAY = TODAY - timedelta(days = 1)
+DAYS_AGO = TODAY - timedelta(days = 8)
+
+# -- colors
 
 # color matrix, first entry warmest, last entry coldest
 rocket = [(255, 50, 50),
@@ -36,6 +39,34 @@ rocket = [(255, 50, 50),
           (50, 64, 255)]
 
 # -- functions
+
+def prepare_full_data():
+    """ construct a 'full' data set so that we can identify missing data """
+    
+    # create a data frame with all days between yesterday and 8 days back
+    start = DAYS_AGO
+    step = timedelta(days=1)
+    daylist = []
+    while start <= YESTERDAY:
+        daylist.append(start)
+        start += step
+    df_days = pd.DataFrame({"datecol": daylist})
+    df_days["key"] = 1
+    df_days["datecol"] = df_days["datecol"].astype(str)
+    
+    # create a data frame with all the avaliable time slots
+    slots = []
+    for slot in range(0, 24, 3):
+        slots.append(f"slot{slot}_{slot + 3}")
+    df_slots = pd.DataFrame({"timeslot":slots})
+    df_slots["key"] = 1
+    
+    # combine this data set to construct a df with 64 rows for all combinations    
+    df_all_combos = df_days.merge(df_slots, how = "outer")
+    df_all_combos.drop(columns = "key", inplace = True)
+    
+    return df_all_combos
+    
 
 def get_data():
     """ get the data from sqlite """
@@ -92,15 +123,15 @@ def temp_to_rgb(tempval, colorscheme):
         return colorscheme[6]
     elif tempval > 18 and tempval <= 20:
         return colorscheme[5]
-    elif tempval > 20 and tempval <= 22:
+    elif tempval > 20 and tempval <= 23:
         return colorscheme[4]
-    elif tempval > 22 and tempval <= 26:
+    elif tempval > 23 and tempval <= 26:
         return colorscheme[3]
     elif tempval > 26 and tempval <= 30:
         return colorscheme[2]
     elif tempval > 30 and tempval <= 35:
         return colorscheme[1]
-    elif tempval > 35:
+    elif tempval > 35 and tempval <= 55:
         return colorscheme[0]
     else:
         return (0,0,0)
@@ -112,66 +143,50 @@ def show_color_scheme(colorscheme):
         for row in range(0, 8):
             unicorn.set_pixel(col, row, colorscheme[col])
 
-def light_up_error():
-    """ in case data is 'corrupt' just light it up to show that """
+def turn_on_pixels(seconds):
+    """ show the data """
     
-    for col in range(0, 8):
-        for row in range(0, 8):
-            unicorn.set_pixel(col, row, (125, 50, 255))
-    
-def turn_on_pixels(reslist):
-    """ 
-    show the data, the list that is returned from the query contains the data
-    starting from the earliest date and the earlist time, so that means we must
-    fill the unicorn from the last row, in column order """
-    
-    listlength = len(reslist)
-    
-    list_counter = 0
+    counter = 0
+    # loop from the bottom rows of the hat and go columnswise ---> ^ ---> etc
     for row in reversed(range(0, 8)):
         for col in range(0,8):
             print(f"row is: {row}, col is: {col}")
-            # fill unicorn
-            print(reslist[list_counter])
-            pixel_temp = reslist[list_counter][2]
-            print(pixel_temp)
-            # light up the unicorn
-            unicorn.set_pixel(col, row, temp_to_rgb(pixel_temp, rocket))
+            # extract temperature and convert to float
+            tempus = df_show.loc[counter, "mean_temp"]
+            tempus = float(tempus)
+            print(f"temperature is {tempus}")
+            # get the color value that should be displayed
+            color = temp_to_rgb(tempus, rocket)
+            print(f"color is {color}")
+            # turn on pixels
+            unicorn.set_pixel(col, row, color)
+            time.sleep(0.05)
+            unicorn.show()
             # add to counter
-            print(f"list counter is {list_counter}")
-            list_counter = list_counter + 1
-            # break out of loop once the list is full
-            if list_counter == listlength:
-                return
-
-def activate_pixels(seconds):
-    unicorn.show()
+            print(f"counter is {counter}")
+            counter = counter + 1
+    # let it shine
     time.sleep(seconds)
     unicorn.off()
-
+           
 # -- start execution
 
-# first get a data frame
-    
+# get the data from sqlite as pandas df
+df_data = get_data()
 
-results = get_data()
+# get the full data
+df_all = prepare_full_data()
 
+# merge actual data with full data to get a df that has explicit missings
+df_show = pd.merge(df_all,
+                   df_data,
+                   left_on = ['datecol','timeslot'],
+                   right_on = ['datecol', 'timeslot'],
+                   how = "outer",
+                   indicator = True)
 
-if __name__ == "__main__":
-    results = get_data()
-    show_color_scheme(rocket)
-    activate_pixels(2)
-    time.sleep(1)
-    # right now, unless we have recordings that gives us eight slots per day,
-    # do not show
-    # TODO: rewrite query to generate results based on pre def time slots
-    # possibly generate a sequence of dates, timesslots to represent missing
-    # data
-    if len(results) != 60:
-        print("data has not been properly recorded")
-        light_up_error()
-        activate_pixels(10)
-    else:
-        turn_on_pixels(results)
-        activate_pixels(10)
-    
+# replace all missing values with something unresonable
+df_show = df_show.fillna(value = {"n_obs": 0, "mean_temp": 99999})
+
+# activate the pixels
+turn_on_pixels(10)
