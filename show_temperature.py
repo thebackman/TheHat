@@ -193,4 +193,4 @@ df_show = pd.merge(df_all,
 df_show = df_show.fillna(value = {"n_obs": 0, "mean_temp": 99999})
 
 # activate the pixels
-turn_on_pixels(20)
+turn_on_pixels(60)
