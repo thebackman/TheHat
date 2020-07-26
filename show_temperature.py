@@ -1,5 +1,9 @@
 """ show the temperature for the last 8 days """
 
+# CRON
+
+# 1 22 * * * python3 /home/pi/Projects/Hattie/show_temperature.py
+
 # -- setup
 
 # libs
@@ -189,4 +193,4 @@ df_show = pd.merge(df_all,
 df_show = df_show.fillna(value = {"n_obs": 0, "mean_temp": 99999})
 
 # activate the pixels
-turn_on_pixels(10)
+turn_on_pixels(20)
