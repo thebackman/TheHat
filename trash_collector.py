@@ -4,12 +4,29 @@
 
 # import ics
 import os
-from datetime import datetime # timedelta
+from datetime import datetime, timedelta
+import unicornhat as unicorn
+import time
 
+# folders
 PROJ_FOLDER = "/home/pi/Projects/Hattie"
 CAL1 = os.path.join(PROJ_FOLDER, "calendar-Leichtverpackungen.ics")
 CAL2 = os.path.join(PROJ_FOLDER, "calendar-Papier.ics")
+
+# dates
 TODAY = datetime.now().date()
+# OTHER_DAY = TODAY - timedelta(days = 7)
+RUN_TIME_HOURS = 2
+
+# led matrix
+unicorn.set_layout(unicorn.AUTO)
+unicorn.rotation(180)
+unicorn.brightness(0.4)
+
+# colors
+blues = [[0,0,255], [0,191,255]]
+yellows = [[255,255,0], [255, 215,0]]
+blue_yellow = [blues[0], yellows[0]]
 
 ### FUNCTIONS ##################################################################
 
@@ -36,16 +53,36 @@ def parse_calendar(path):
             
     return(dates)
 
-def blue_day():
-    pass
-
-def yellow_day():
-    pass
-
-def blue_yellow_day():
-    pass
+def show_colors(color_scheme):
+    """ show a chess board consisting of two colors """
+    
+    # iterate over the rows of the matrix
+    for row in range(0, 8):
+        for col in range (0,8):
+            print(f"--- row is {row} and col is {col} -- ")
+            # check if we have even | uneven rows cols
+            mod_row = row % 2
+            mod_col = col % 2
+            print(mod_row)
+            print(mod_col)
+            # if we have even rows apply color1 on entry 0, 2, 4, 6
+            if mod_row == 0:
+                if mod_col == 0:
+                    unicorn.set_pixel(row, col, tuple(color_scheme[0]))
+                else:
+                    unicorn.set_pixel(row, col, tuple(color_scheme[1]))
+            # if we have uneven rows, apply color1 on entry 1,3,5,7
+            if mod_row == 1:
+                if mod_col == 1:
+                    unicorn.set_pixel(row, col, tuple(color_scheme[0]))
+                else:
+                    unicorn.set_pixel(row, col, tuple(color_scheme[1]))
+    
+    unicorn.show()
+    time.sleep(RUN_TIME_HOURS * 60 * 60)
+    unicorn.off()
         
-### RUN ME #####################################################################
+### RUN ########################################################################
 
 # -- read ICS file
  
@@ -66,13 +103,13 @@ plast_today = TODAY in plastic_days
 
 if paper_today == True and plast_today == True:
     print("today was a yellow and blue day")
-    blue_yellow_day()
+    show_colors(blue_yellow)
 elif paper_today == True:
     print("today was a blue day")
-    blue_day()
+    show_colors(blues)
 elif plast_today == True:
     print("today was a yellow day")
-    yellow_day()
+    show_colors(yellows)
     
 
 
