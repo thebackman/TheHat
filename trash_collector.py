@@ -4,7 +4,7 @@
 
 # import ics
 import os
-from datetime import datetime, # timedelta
+from datetime import datetime # timedelta
 
 PROJ_FOLDER = "/home/pi/Projects/Hattie"
 CAL1 = os.path.join(PROJ_FOLDER, "calendar-Leichtverpackungen.ics")
