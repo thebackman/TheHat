@@ -16,7 +16,7 @@ CAL2 = os.path.join(PROJ_FOLDER, "calendar-Papier.ics")
 # dates
 TODAY = datetime.now().date()
 # OTHER_DAY = TODAY - timedelta(days = 7)
-RUN_TIME_HOURS = 2
+RUN_TIME_SECS = 7200
 
 # led matrix
 unicorn.set_layout(unicorn.AUTO)
@@ -53,7 +53,7 @@ def parse_calendar(path):
             
     return(dates)
 
-def show_colors(color_scheme):
+def show_colors(color_scheme, seconds):
     """ show a chess board consisting of two colors """
     
     # iterate over the rows of the matrix
@@ -79,7 +79,7 @@ def show_colors(color_scheme):
                     unicorn.set_pixel(row, col, tuple(color_scheme[1]))
     
     unicorn.show()
-    time.sleep(RUN_TIME_HOURS * 60 * 60)
+    time.sleep(seconds)
     unicorn.off()
         
 ### RUN ########################################################################
@@ -101,15 +101,23 @@ plast_today = TODAY in plastic_days
 
 # -- light it up
 
+# show me that you are thinking of us
+show_colors(blue_yellow, 1)
+time.sleep(0.5)
+show_colors(blues, 1)
+time.sleep(0.5)
+show_colors(yellows, 1)
+time.sleep(1)
+
 if paper_today == True and plast_today == True:
     print("today was a yellow and blue day")
-    show_colors(blue_yellow)
+    show_colors(blue_yellow, RUN_TIME_SECS)
 elif paper_today == True:
     print("today was a blue day")
-    show_colors(blues)
+    show_colors(blues, RUN_TIME_SECS)
 elif plast_today == True:
     print("today was a yellow day")
-    show_colors(yellows)
+    show_colors(yellows, RUN_TIME_SECS)
     
 
 
