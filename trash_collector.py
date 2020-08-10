@@ -15,7 +15,7 @@ CAL2 = os.path.join(PROJ_FOLDER, "calendar-Papier.ics")
 
 # dates
 TODAY = datetime.now().date()
-# OTHER_DAY = TODAY - timedelta(days = 7)
+TOMORROW = TODAY + timedelta(days = 1)
 RUN_TIME_SECS = 7200
 
 # led matrix
@@ -94,10 +94,10 @@ def show_colors(color_scheme, seconds):
 plastic_days = parse_calendar(CAL1)
 paper_days = parse_calendar(CAL2)
 
-# -- check if today is in any of those lists
+# -- check if tomorrow is in any of those lists
 
-paper_today = TODAY in paper_days
-plast_today = TODAY in plastic_days
+paper_tom = TOMORROW in paper_days
+plast_tom = TOMORROW in plastic_days
 
 # -- light it up
 
@@ -109,13 +109,13 @@ time.sleep(0.5)
 show_colors(yellows, 1)
 time.sleep(1)
 
-if paper_today == True and plast_today == True:
+if paper_tom == True and plast_tom == True:
     print("today was a yellow and blue day")
     show_colors(blue_yellow, RUN_TIME_SECS)
-elif paper_today == True:
+elif paper_tom == True:
     print("today was a blue day")
     show_colors(blues, RUN_TIME_SECS)
-elif plast_today == True:
+elif plast_tom == True:
     print("today was a yellow day")
     show_colors(yellows, RUN_TIME_SECS)
     
