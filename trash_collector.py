@@ -16,7 +16,7 @@ CAL2 = os.path.join(PROJ_FOLDER, "calendar-Papier.ics")
 # dates
 TODAY = datetime.now().date()
 TOMORROW = TODAY + timedelta(days = 1)
-RUN_TIME_SECS = 3600
+RUN_TIME_SECS = 1800
 
 # led matrix
 unicorn.set_layout(unicorn.AUTO)
