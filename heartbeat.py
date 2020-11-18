@@ -5,8 +5,10 @@
 import time
 import unicornhat as unicorn
 import numpy as np
+import sys
 
 STANDARD_BRIGHTNESS = 0.5
+
 # generate brightness values
 vals_raw = np.arange(0.4, 1, 0.01)
 vals = vals_raw.tolist()
@@ -17,11 +19,16 @@ unicorn.rotation(180)
 unicorn.brightness(STANDARD_BRIGHTNESS)
 WIDTH, HEIGHT = unicorn.get_shape()
 
+# get the number of beats
+beats = int(sys.argv[1]) + 1
 
 # -- functions
 
-def heart(colortuple):
-    """ draw a heart """
+def heart():
+    """ draw a heart """ 
+
+    color1 = (190,0,0)
+    color2 = (255,0,0)
 
     # define the positions for the heart
     pos = [
@@ -39,7 +46,10 @@ def heart(colortuple):
     for r in pos:
         # light up each of the columns
         for c in r:
-            unicorn.set_pixel(c, row, colortuple)
+            if (row in [1,2]) and (c in [2,3]):
+                unicorn.set_pixel(c, row, color2)
+            else:
+                unicorn.set_pixel(c, row, color1)
         row = row + 1
 
 def fade(pausetime, direction):
@@ -50,14 +60,14 @@ def fade(pausetime, direction):
         v = vals_rev
     for val in v:
         unicorn.brightness(val)
-        heart((255,0,0))
+        heart()
         unicorn.show()
         time.sleep(pausetime)
     unicorn.off()
 
 # -- light it up
 
-for i in range(1, 4):
+for i in range(1, beats):
     fade(0.005, "in")
     fade(0.001, "out")
     time.sleep(0.6)
