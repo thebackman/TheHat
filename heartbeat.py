@@ -21,14 +21,20 @@ WIDTH, HEIGHT = unicorn.get_shape()
 
 # get the number of beats
 beats = int(sys.argv[1]) + 1
+# get the palette to use
+palette = sys.argv[2]
 
 # -- functions
 
 def heart():
     """ draw a heart """ 
 
-    color1 = (190,0,0)
-    color2 = (255,0,0)
+    if palette == "reds":
+        color1 = (190,0,0)
+        color2 = (255,0,0)
+    if palette == "greens":
+        color1 = (45,175,20)
+        color2 = (42, 255, 0)
 
     # define the positions for the heart
     pos = [
